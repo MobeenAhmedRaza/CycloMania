@@ -60,12 +60,12 @@
     <Compile Include="Assets/ithappy/Megacity/Traffic/Scripts/RoadUtilis/RoadUtilis.cs" />
     <Compile Include="Assets/ithappy/Megacity/Traffic/Scripts/Traffic/TrafficPath.cs" />
     <Compile Include="Assets/Cyclomania/Runtime/RideReplay.cs" />
-    <Compile Include="Assets/Cyclomania/Runtime/TouchControlGraphic.cs" />
     <Compile Include="Assets/Cyclomania/Runtime/GameplayRecurring.cs" />
+    <Compile Include="Assets/Cyclomania/Runtime/TouchControlGraphic.cs" />
     <Compile Include="Assets/Cyclomania/Runtime/GamePreferences.cs" />
     <Compile Include="Assets/ithappy/Megacity/Traffic/Scripts/Road/RoadSection.cs" />
-    <Compile Include="Assets/Cyclomania/Runtime/SettingsAudioChannel.cs" />
     <Compile Include="Assets/ithappy/Megacity/Traffic/Scripts/Car/Wheel.cs" />
+    <Compile Include="Assets/Cyclomania/Runtime/SettingsAudioChannel.cs" />
     <Compile Include="Assets/ithappy/Megacity/Traffic/Scripts/Car/ICarPart.cs" />
     <Compile Include="Assets/Cyclomania/Runtime/RideMinimap.cs" />
     <Compile Include="Assets/Simple Bicycle Physics/Scripts/MobileButtonHandler.cs" />
@@ -1221,8 +1221,8 @@
       <HintPath>Library/ScriptAssemblies/Unity.PlasticSCM.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.Multiplayer.Center.Editor">
-      <HintPath>Library/ScriptAssemblies/Unity.Multiplayer.Center.Editor.dll</HintPath>
+    <Reference Include="Unity.Splines">
+      <HintPath>Library/ScriptAssemblies/Unity.Splines.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.State">
@@ -1231,6 +1231,10 @@
     </Reference>
     <Reference Include="Unity.Postprocessing.Runtime">
       <HintPath>Library/ScriptAssemblies/Unity.Postprocessing.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.Center.Editor">
+      <HintPath>Library/ScriptAssemblies/Unity.Multiplayer.Center.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Mathematics.Editor">
@@ -1243,10 +1247,6 @@
     </Reference>
     <Reference Include="Unity.2D.Sprite.Editor">
       <HintPath>Library/ScriptAssemblies/Unity.2D.Sprite.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Splines">
-      <HintPath>Library/ScriptAssemblies/Unity.Splines.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.TextMeshPro.Editor">

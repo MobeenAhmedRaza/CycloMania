@@ -1,9 +1,0 @@
-Base path: '/Applications/Unity/Hub/Editor/6000.0.79f1/Unity.app/Contents', plugins path '/Applications/Unity/Hub/Editor/6000.0.79f1/Unity.app/Contents/PlaybackEngines'
-Cmd: initializeCompiler
-
-Cmd: compileComputeKernel
-  insize=12046 file=Assets/ithappy/Megacity/Traffic/Scripts/Compute/Trafiic.compute kernel=k_MoveTraffic ppOnly=0 stripLineD=0 buildPlatform=9 km=<UNITY_VERSION=60000079> pKW=UNITY_NO_RGBM UNITY_ENABLE_REFLECTION_BUFFERS UNITY_FRAMEBUFFER_FETCH_AVAILABLE UNITY_NO_SCREENSPACE_SHADOWS UNITY_PBS_USE_BRDF3 SHADER_API_MOBILE UNITY_LIGHTMAP_RGBM_ENCODING UNITY_ASTC_NORMALMAP_ENCODING uKW=SHADER_STAGE_COMPUTE platform=metal flags=268439584 reqs=50241 forceDXC=0 forceFXC=0 ok=1 outsize=31770
-
-Cmd: shutdown
-
-Quitting shader compiler process
