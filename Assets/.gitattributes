@@ -1,0 +1,98 @@
+"BikeMania_GUI/UI.psd" filter=lfs diff=lfs merge=lfs -text
+"BikeMania_GUI/gamelogo.png" filter=lfs diff=lfs merge=lfs -text
+"MobileCity/Collider/airport collider.FBX" filter=lfs diff=lfs merge=lfs -text
+"MobileCity/DemoScene.unity" filter=lfs diff=lfs merge=lfs -text
+"MobileCity/Mesh/airport building.FBX" filter=lfs diff=lfs merge=lfs -text
+"MobileCity/Mesh/ferris wheel.FBX" filter=lfs diff=lfs merge=lfs -text
+"MobileCity/Textures/MobileCityTexture.psd" filter=lfs diff=lfs merge=lfs -text
+"Scenes/gameplay/OcclusionCullingData.asset" filter=lfs diff=lfs merge=lfs -text
+"Scenes/gameplay.unity" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Animations/Idle.anim" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Animations/IdleToStart.anim" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Animations/OnOffBike.anim" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Animations/ProtectRagdoll.anim" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Audio/FreeWheel.wav" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Audio/Pedalling.wav" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Documentation Simple Bicycle Physics.pdf" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Models/BicycleModel.fbx" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Models/CrashDummy.fbx" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Models/Cyclist.fbx" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Models/Downhill Bicycle.fbx" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Models/Fatbike.fbx" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Models/GirlBiker.fbx" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Models/Mountain Bike.fbx" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Models/MtbBiker.fbx" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Models/MtbBiker2.fbx" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Models/MtbBiker3.fbx" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Models/Offroad Bicycle.fbx" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Models/PennyFarthing Bicycle.fbx" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Models/Scooter.fbx" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Models/TrialBike.fbx" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Models/Tricycle.fbx" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Prototyping/New Terrain.asset" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Prototyping/TerrainData_4fc1bf50-9aa3-4ecd-86f5-d9082959f2b8.asset" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Scenes/Basic Cyclist Setup/OffroadBicycleSetup.unity" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Scenes/Basic Cyclist Setup/PennyFarthingSetup.unity" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Scenes/Freestyle Setup/DownhillBike StuntReady.unity" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Scenes/Ragdoll Setup/Ragdoll Setup Guide.pdf" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Scenes/Vehicle EnterExit Setup/MTBRider3 EnterExit Setup.unity" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Scenes/Vehicle EnterExit Setup/Vehicle Enter Exit Setup Guide.pdf" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Scenes/WayPoint Bicycle Setup/WaypointBicycleStandardSetup.unity" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/Asphalt.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/AsphaltN.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/BackpackAlbedo.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/BackpackNormal.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/FemaleBodyColor.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/FemaleBodyColorNormal.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/FemaleClothes.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/FemaleClothesNormal.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/FemaleHelmet.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/Gloves Red.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/JerseyAlbedo White.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/JerseyAlbedo Yellow.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/JerseyAlbedo.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/JerseyNormal.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/MTBHelmet.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/MTBRider2Jersey.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/MTBRider2JerseyRed.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/MTBRider2Jersey_Normal.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/MiscBake.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/MiscBakeNormal.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/OffroadBikeLivery - Yellow.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/OffroadBikeLivery.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/OldBicycleLivery.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/OldBicycleLiveryNormal.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/OutfitAlbedoBake18 1.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/OutfitAlbedoBake18.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/OutfitBake.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/OutfitBakeNormal.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/OutfitNormalBake18.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/ScooterLivery.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/ScooterWheels.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/Tread Normal.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/Tread.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/TricycleLivery.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/WhiteOutfit.png" filter=lfs diff=lfs merge=lfs -text
+"Simple Bicycle Physics/Textures/model_baseColor.png" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Meshes/Buildings/Business center/casino_001.fbx" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Meshes/Buildings/Government/airport_001.fbx" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Meshes/Buildings/Government/cosmodrome_001.fbx" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Meshes/Buildings/Government/railway_station_001.fbx" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Meshes/Buildings/Residental/elite_residental_building_001.fbx" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Meshes/Buildings/Skyscrapers/eiffel_tower_001.fbx" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Meshes/Environment/mountain_011.fbx" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Meshes/Environment/mountain_015.fbx" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Meshes/Landscape/Roads/casino_platform_001.fbx" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Meshes/Leisure/aquapark_001.fbx" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Meshes/Leisure/dolphinarium_001.fbx" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Meshes/Leisure/ferris_wheeel_wheel_001.fbx" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Meshes/Leisure/music_scene_001.fbx" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Meshes/Leisure/roller_coaster_001.fbx" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Meshes/Leisure/roller_coaster_002.fbx" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Meshes/Leisure/stadium_001.fbx" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Render_Pipeline_Convert/URP_to_HDRP_source.unitypackage" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Scenes/Demonstration_Trafic/OcclusionCullingData.asset" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Scenes/Demonstration_Trafic.unity" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Scenes/Overview.unity" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Skyboxes/Skybox_Textures/Skybox_5.png" filter=lfs diff=lfs merge=lfs -text
+"ithappy/Megacity/Textures/Textures.png" filter=lfs diff=lfs merge=lfs -text
