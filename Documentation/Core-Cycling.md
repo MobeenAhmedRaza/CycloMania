@@ -9,7 +9,7 @@ The existing Simple Bicycle Physics controller and rider/pedal geometry are reta
 - Left Shift / Sprint: sprint. The active bicycle's target is 6.25 m/s (22.5 km/h) normally and 12.5 m/s (45 km/h) sprinting. Targets limit powered acceleration, not downhill gravity.
 - Keyboard and touch share one smoothing path. Braking takes priority over pedaling. Missing mobile buttons no longer cause startup exceptions.
 - Wheel probes ignore the bicycle itself and triggers, report airborne state even when no ground is found, and supply a terrain normal for slope-aligned propulsion and assisted balance.
-- Grounded resistance slows coasting. Braking opposes motion without applying reverse propulsion. Pedaling in midair provides no thrust.
+- Grounded resistance slows coasting. Braking first opposes motion. Holding brake/down for 0.35 seconds at near-zero forward speed engages grounded reverse, capped at 3 m/s (10.8 km/h), with 2.5 m/s² reverse drive. Pedaling while reversing brakes before accelerating forward. Wheelie + brake remains the stoppie input and cannot engage powered reverse. Pedaling in midair provides no thrust.
 - Frame/wheel continuous collision detection and frame interpolation are enabled. Tire materials are cloned per bicycle instead of modifying imported shared materials.
 - Existing basic wheelie/hop inputs remain; their full stunt system and scoring belong to Part 5.
 

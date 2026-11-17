@@ -12,7 +12,7 @@ namespace Cyclomania
         public GameSettings Owner=>owner;
         private float raw,applied;
         private bool scaled;
-        public void Bind(GameSettings settings,bool isMusic=false,AudioSource target=null){source=target!=null?target:GetComponent<AudioSource>();owner=settings;music=isMusic;raw=source.volume;scaled=false;Apply();}
+        public void Bind(GameSettings settings,bool isMusic=false,AudioSource target=null){source=target!=null?target:GetComponent<AudioSource>();owner=settings;music=isMusic;raw=source.volume;scaled=false;owner.Register(this);Apply();}
         private void Update(){Restore();}
         private void LateUpdate(){Apply();}
         private void Restore(){if(source==null || !scaled)return;if(Mathf.Approximately(source.volume,applied))source.volume=raw;scaled=false;}

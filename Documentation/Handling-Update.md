@@ -17,3 +17,17 @@ The requested **200% increase** is applied as **three times the original cruise 
 Garage stats and controller settings use the same scaling functions. Existing saves and purchased/unlocked upgrade tiers are retained, and applying a setup does not compound the multiplier. These are speed caps, not a promise that every slope or launch situation reaches that speed with unchanged drive force.
 
 Validation includes simulated left/right turns, speed preservation during steering, high-speed braking, the existing touch/stunt/garage/mission regressions, and turn checks with the imported City and BMX bicycles in the full scene. Headless validation still needs hands-on confirmation of control feel on iPhone/iPad.
+
+## October 27 — new-map traffic and reverse
+
+The gameplay scene’s Megacity TrafficSpawner probability is reduced from 0.45 to 0.1125, giving 25% of the previous expected traffic density with the existing 10 m spawn spacing. Spawning is randomized, so exact car counts vary between runs.
+
+Holding brake/down first stops forward motion, then engages reverse after 0.35 seconds near rest. Reverse drive is 2.5 m/s², capped at 3 m/s, and requires rear-wheel ground contact. Pedaling brakes backward movement before moving forward. Wheelie + brake does not engage powered reverse. Clearing controls resets the reverse hold timer. Forward speed, acceleration and existing brake strength are unchanged.
+
+Core physics checks cover brief brake taps, sustained reverse and its speed limit, forward recovery, and stoppie input exclusion alongside existing handling tests. New-map traffic counts and device driving still need visual playtesting.
+
+## Low-curb assistance
+
+Pedaling into a static, flat-topped curb up to 0.30 m high now steps the bicycle onto it. The assist checks the curb height and upward/forward clearance, then moves the frame and both wheel bodies together without adding velocity or changing acceleration. It also works once reverse is engaged. It is disabled while airborne, suspended, tipped, or using wheelie/jump input. Tall walls, dynamic objects and overhead obstructions remain blocking. The `curbHeight` controller setting controls the maximum height.
+
+Tests cover a 20 cm sidewalk, unchanged joint spacing/velocity, tall-wall rejection, idle/stunt exclusion and overhead clearance. Actual new-map curb geometry still needs in-game/device playtesting.

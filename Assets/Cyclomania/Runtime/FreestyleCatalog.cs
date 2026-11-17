@@ -8,6 +8,7 @@ namespace Cyclomania
         public static bool Unlocked(int zone,int points)=>zone>=0 && zone<5 && points>=UnlockPoints(zone);
         public static bool Contains(int zone,Vector3 p)
         {
+            if(RideWorld.Layout!=null)return RideWorld.Layout.Contains(zone,p);
             switch(zone) {
                 case 0:return p.x>=-400 && p.x<=380 && p.z>=-600 && p.z<=400;
                 case 1:return p.x>=570 && p.x<=670 && p.z>=-200 && p.z<=-20;

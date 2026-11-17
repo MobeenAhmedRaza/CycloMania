@@ -31,10 +31,10 @@ namespace Cyclomania
                 ActionButton(page,"NextPage",">",new Vector2(130,-240),()=>{missionPage++;DrawMissionPage();},new Vector2(90,55)).interactable=missionPage<(MissionCatalog.Count-1)/3;
             }
             ActionButton(page,"Back","BACK",new Vector2(-370,-240),ShowPausePage,new Vector2(220,55));
-            Label(page,"Hint","Crash, reset, travel or changing bicycles ends an attempt.",18,new Vector2(0,-185),new Vector2(1000,40));
+            Label(page,"Hint",string.IsNullOrEmpty(Missions.SaveNotice)?"New route each level · Crash, reset, travel or changing bicycles ends an attempt.":Missions.SaveNotice,18,new Vector2(0,-185),new Vector2(1000,40));
         }
         private void StartMission(int index)
-        { if(Missions.Begin(index)) {Refresh();Resume();} }
+        { if(Missions.Begin(index)) {Refresh();Resume();}else DrawMissionPage(); }
         public void ShowMissionResult()
         {
             if(Missions==null || Missions.Attempt.Active || Missions.Attempt.State==MissionState.Idle)return;

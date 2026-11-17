@@ -6,8 +6,9 @@ Implemented in `Assets/Scenes/gameplay.unity`, inside the existing safe-area pan
 | --- | --- | --- |
 | Bottom left | Left / right arrows | Hold to steer; both together cancel touch steering. |
 | Right, upper main button | Up arrow | Hold to pedal. |
-| Right, lower main button | Down arrow | Hold to brake; braking wins over pedaling. |
+| Right, lower main button | Down arrow | Hold to brake, then continue holding at rest to reverse slowly; brake/down wins over pedaling. |
 | Beside pedal | Sprint | Hold while pedaling. |
+| Beside sprint | Handbrake (!) | Hold for stronger braking without reverse; keyboard H. |
 | Beside brake | Jump | Hold to charge the existing bunny hop, release to jump. |
 | Above left steering | Wheelie | Hold while pedaling. Existing wheelie support is enabled on the active bicycle. |
 | Above right steering | Reset | Tap to respawn at the starting location. |
@@ -34,3 +35,5 @@ Run `python3 Tests/TouchControls/check_layout.py` for serialized scene checks. I
 Run `python3 Tests/CoreCycling/run.py` for the isolated Unity physics and touch suite. Tests cover independent holds, multiple fingers on one button, unrelated pointer releases, drag-off cancellation, brake priority, disabled/paused/focus/rotation cleanup, jump cancellation versus release, one-shot actions, and all eight icon meshes, alongside Part 2's physics checks.
 
 This part adds controls for existing actions. Advanced stunt mechanics and scoring are now implemented in Part 5; see Stunts-and-Scoring.md. Career challenge tracking comes in later parts. The iOS build module is still required before device testing.
+
+Per-level mission locations and the dedicated handbrake are documented in `Mission-Locations.md`.

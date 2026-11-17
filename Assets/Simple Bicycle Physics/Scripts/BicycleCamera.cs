@@ -21,7 +21,8 @@ namespace SBPScripts
         public float rotationSnapTime = 0.3f;
         [Min(0.05f)] public float collisionRadius = 0.3f;
         public LayerMask obstacleLayers = ~0;
-        private readonly RaycastHit[] hits = new RaycastHit[32];
+        private static readonly float[] escapeAngles={45f,-45f,90f,-90f,135f,-135f,180f};
+        private readonly RaycastHit[] hits = new RaycastHit[64];
         private float yaw, yawVelocity;
         private Vector3 focus;
         private CycleRecovery recovery;
@@ -35,6 +36,8 @@ namespace SBPScripts
             }
             if (target == null) { enabled = false; return; }
             GetComponent<Camera>().nearClipPlane = 0.1f;
+            // The imported map replaced the geometry used by the old scene bake.
+            GetComponent<Camera>().useOcclusionCulling = false;
             SetTarget(target);
         }
 
@@ -76,17 +79,28 @@ namespace SBPScripts
             float length = offset.magnitude;
             if (length < 0.01f) return;
             Vector3 direction = offset / length;
-            int count = Physics.SphereCastNonAlloc(focus, collisionRadius, direction, hits, length,
-                obstacleLayers, QueryTriggerInteraction.Ignore);
-            float allowedDistance = length;
-            for (int i = 0; i < count; i++)
-            {
-                if (hits[i].transform.IsChildOf(target)) continue;
-                allowedDistance = Mathf.Min(allowedDistance, Mathf.Max(0.05f, hits[i].distance - 0.05f));
+            float allowedDistance = Clearance(direction,length);
+            // Tight corners should offer a side view instead of collapsing to a few centimetres.
+            if(allowedDistance<1.5f){
+                foreach(float angle in escapeAngles){
+                    Vector3 candidate=Quaternion.AngleAxis(angle,Vector3.up)*(offset/length);
+                    float clear=Clearance(candidate,length);
+                    if(clear>allowedDistance+.1f){direction=candidate;allowedDistance=clear;}
+                    if(allowedDistance>=length*.8f)break;
+                }
             }
-            // Resolve collision after smoothing, so the camera never interpolates through a wall.
             transform.position = focus + direction * allowedDistance;
             transform.rotation = Quaternion.LookRotation(focus - transform.position, Vector3.up);
+        }
+        private float Clearance(Vector3 direction,float length)
+        {
+            int count=Physics.SphereCastNonAlloc(focus,collisionRadius,direction,hits,length,obstacleLayers,QueryTriggerInteraction.Ignore);
+            float result=length;
+            for(int i=0;i<count;i++){
+                if(hits[i].transform.IsChildOf(target))continue;
+                result=Mathf.Min(result,Mathf.Max(.05f,hits[i].distance-.05f));
+            }
+            return result;
         }
 
         private void OnDestroy() { RestoreRider(); if (recovery != null) recovery.Respawned -= Snap; }

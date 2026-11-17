@@ -45,6 +45,9 @@ public static class TouchValidation
         Check(bike.bunnyHopInputState==0,"cancelled jump hold does not launch a jump");
         jump.OnPointerDown(Finger(5));Invoke(bike,"ApplyCustomInput");jump.OnPointerUp(Finger(5));Invoke(bike,"ApplyCustomInput");
         Check(bike.bunnyHopInputState==-1,"intentional jump release preserves jump action");
+        var handbrake=Control("Handbrake test",1);bike.mobileControls.handbrake=handbrake;
+        handbrake.OnPointerDown(Finger(8));pedal.OnPointerDown(Finger(9));Invoke(bike,"ApplyCustomInput");Check(bike.HandbrakeHeld && pedal.IsPressed,"handbrake and pedal support independent simultaneous touches");
+        bike.ClearInput();Check(!bike.HandbrakeHeld && !handbrake.IsPressed,"reset releases handbrake and its pointer");
         int presses=0;pedal.onPress.AddListener(()=>presses++);pedal.OnPointerDown(Finger(1));pedal.OnPointerDown(Finger(2));
         Check(presses==1,"one-shot action fires once per hold");pedal.ReleaseAll();
         foreach(TouchControlGraphic.Symbol symbol in Enum.GetValues(typeof(TouchControlGraphic.Symbol)))

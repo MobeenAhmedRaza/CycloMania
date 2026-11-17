@@ -61,6 +61,7 @@ namespace SBPScripts
     {
         public MobileButtonHandler forward;
         public MobileButtonHandler backward;
+        public MobileButtonHandler handbrake;
         public MobileButtonHandler right;
         public MobileButtonHandler left;
         [Space]
@@ -165,6 +166,12 @@ namespace SBPScripts
 
         [Header("Cyclomania core riding")]
         [Min(0)] public float brakeDeceleration = 7f;
+        [Min(0)] public float reverseSpeed = 3f;
+        [Min(0)] public float reverseAcceleration = 2.5f;
+        private float reverseHold;
+        public bool HandbrakeHeld { get; private set; }
+        [Range(0, .5f)] public float curbHeight = .3f;
+        private readonly RaycastHit[] curbHits = new RaycastHit[32];
         [Min(0)] public float rollingResistance = 0.12f;
         public bool IsGrounded { get; private set; }
         public bool FrontGrounded { get; private set; }
@@ -235,6 +242,7 @@ namespace SBPScripts
             // You may choose to drag the Objects in the inspector for referencing.
             if (mobileControls.forward == null) mobileControls.forward = GameObject.Find("Forward")?.GetComponent<MobileButtonHandler>();
             if (mobileControls.backward == null) mobileControls.backward = GameObject.Find("Backward")?.GetComponent<MobileButtonHandler>();
+            if (mobileControls.handbrake == null) mobileControls.handbrake = GameObject.Find("Handbrake")?.GetComponent<MobileButtonHandler>();
             if (mobileControls.left == null) mobileControls.left = GameObject.Find("Left")?.GetComponent<MobileButtonHandler>();
             if (mobileControls.right == null) mobileControls.right = GameObject.Find("Right")?.GetComponent<MobileButtonHandler>();
             if (mobileControls.sprint == null) mobileControls.sprint = GameObject.Find("Sprint")?.GetComponent<MobileButtonHandler>();
@@ -247,6 +255,7 @@ namespace SBPScripts
 
             if (suspended) return;
             UpdateGroundContact();
+            TryClimbCurb();
             Vector3 physicsForward = rb.rotation * Vector3.forward;
             Vector3 physicsRight = rb.rotation * Vector3.right;
             if (queuedHop > 0)
@@ -275,8 +284,17 @@ namespace SBPScripts
             else
                 currentTopSpeed = Mathf.Lerp(currentTopSpeed, topSpeed, Time.deltaTime);
 
-            bool braking = rawCustomAccelerationAxis < 0;
             Vector3 travel = Vector3.ProjectOnPlane(physicsForward, GroundNormal).normalized;
+            float signedSpeed = Vector3.Dot(rb.linearVelocity, travel);
+            bool reverseInput = rawCustomAccelerationAxis < 0 && !wheelieInput && !HandbrakeHeld && rearGrounded;
+            reverseHold = reverseInput && signedSpeed <= .15f ? reverseHold + Time.fixedDeltaTime : 0;
+            bool reverseDriving = reverseInput && reverseHold >= .35f;
+            bool braking = HandbrakeHeld || (rawCustomAccelerationAxis < 0 && !reverseDriving) || (rawCustomAccelerationAxis > 0 && signedSpeed < -.1f);
+            if (reverseDriving)
+            {
+                // Drive the whole jointed rig gently backwards; keep the forward acceleration unchanged.
+                ApplyReverse(rb, travel); ApplyReverse(fWheelRb, travel); ApplyReverse(rWheelRb, travel);
+            }
             if (!braking && rearGrounded && currentSpeed < currentTopSpeed && rawCustomAccelerationAxis > 0)
             {
                 rWheelRb.AddTorque(physicsRight * torque * Mathf.Max(0, customAccelerationAxis));
@@ -286,7 +304,7 @@ namespace SBPScripts
             isReversing = Vector3.Dot(rb.linearVelocity, physicsForward) < -0.1f;
             if (IsGrounded)
             {
-                float resistance = braking ? brakeDeceleration : rollingResistance;
+                float resistance = HandbrakeHeld ? Mathf.Max(14f,brakeDeceleration*1.5f) : braking ? brakeDeceleration : rollingResistance;
                 ApplyResistance(rb, resistance);
                 ApplyResistance(fWheelRb, resistance);
                 ApplyResistance(rWheelRb, resistance);
@@ -394,7 +412,7 @@ namespace SBPScripts
             // Assisted balance only operates while a wheel touches rideable ground.
             stuntMode = isAirborne && airTimeSettings.freestyle;
             restingCrank = isAirborne || isBunnyHopping ? 100 : 10;
-            bool stuntInput = wheelieToggle && wheelieInput && rawCustomAccelerationAxis != 0;
+            bool stuntInput = wheelieToggle && wheelieInput && !HandbrakeHeld && rawCustomAccelerationAxis != 0;
             if (IsGrounded && (!stuntInput || currentSpeed <= .5f) && !isBunnyHopping)
             {
                 Vector3 forward = Vector3.ProjectOnPlane(physicsForward, GroundNormal);
@@ -469,6 +487,7 @@ void ApplyCustomInput()
         {
             if (wayPointSystem.recordingState == WayPointSystem.RecordingState.DoNothing || wayPointSystem.recordingState == WayPointSystem.RecordingState.Record)
             {
+                HandbrakeHeld=Input.GetKey(KeyCode.H) || Button(mobileControls.handbrake)>0;
                 float steer = Input.GetAxisRaw("Horizontal");
                 float pedal = Input.GetAxisRaw("Vertical");
                 float touchSteer = Button(mobileControls.right) + Button(mobileControls.left);
@@ -590,6 +609,54 @@ void ApplyCustomInput()
             Vector3 direction=Vector3.Slerp(planar.normalized,heading,1-Mathf.Exp(-18*Time.fixedDeltaTime)).normalized;
             body.linearVelocity=normal+direction*planar.magnitude;
         }
+        private bool CurbCast(Vector3 origin, Vector3 direction, float distance, float radius, out RaycastHit nearest)
+        {
+            nearest=default;float best=float.PositiveInfinity;
+            int count=radius>0?Physics.SphereCastNonAlloc(origin,radius,direction,curbHits,distance,~0,QueryTriggerInteraction.Ignore)
+                :Physics.RaycastNonAlloc(origin,direction,curbHits,distance,~0,QueryTriggerInteraction.Ignore);
+            for(int i=0;i<count;i++){
+                var hit=curbHits[i];if(hit.transform.IsChildOf(transform) || Vector3.Dot(hit.normal,direction)>=-.05f)continue;
+                // An initial wheel/curb overlap is safe to lift out of when the entire obstacle is below its centre.
+                if(radius>0 && hit.distance==0 && direction.y>.9f && hit.collider.bounds.max.y<=origin.y)continue;
+                if(hit.distance<best){best=hit.distance;nearest=hit;}
+            }
+            return !float.IsPositiveInfinity(best);
+        }
+        private void TryClimbCurb()
+        {
+            if(HandbrakeHeld || curbHeight<=0 || !IsGrounded || suspended || wheelieInput || queuedHop>0 || Vector3.Dot(rb.rotation*Vector3.up,Vector3.up)<.85f)return;
+            float signed=Vector3.Dot(rb.linearVelocity,rb.rotation*Vector3.forward);
+            // Brake remains a brake; reverse steps require reverse to have engaged already.
+            float direction=rawCustomAccelerationAxis>0 && signed>=-.1f?1:rawCustomAccelerationAxis<0 && reverseHold>=.35f?-1:0;
+            if(direction==0)return;
+            var wheel=direction>0?frontCollider:rearCollider;if(wheel==null)return;
+            var body=wheel.attachedRigidbody;
+            float radius=wheel.radius*Mathf.Max(Mathf.Abs(wheel.transform.lossyScale.x),Mathf.Abs(wheel.transform.lossyScale.y),Mathf.Abs(wheel.transform.lossyScale.z));
+            Vector3 center=body.position+body.rotation*Vector3.Scale(wheel.center,wheel.transform.lossyScale);
+            Vector3 forward=Vector3.ProjectOnPlane(rb.rotation*Vector3.forward*direction,Vector3.up).normalized;
+            Vector3 foot=center-Vector3.up*radius;
+            if(!CurbCast(foot+Vector3.up*.06f,forward,radius+.12f,0,out var edge) || edge.normal.y>.4f)return;
+            // Only static, flat-topped low geometry is a step, never traffic or steep walls.
+            if(edge.rigidbody!=null)return;
+            Vector3 ahead=foot+forward*(edge.distance+.08f);
+            if(!CurbCast(ahead+Vector3.up*(curbHeight+.06f),Vector3.down,curbHeight+.06f,0,out var top) || top.normal.y<.85f || top.rigidbody!=null)return;
+            float rise=top.point.y-foot.y;if(rise<.04f || rise>curbHeight)return;
+            Vector3 lift=Vector3.up*(rise+.025f),advance=forward*(edge.distance+.08f);
+            foreach(var part in new[]{rb,fWheelRb,rWheelRb}) {
+                float clearance=part==fWheelRb?radius:part==rWheelRb?radius:.2f;
+                Vector3 origin=part==rb?GetComponent<Collider>().bounds.center:part==body?center:part.position;
+                if(CurbCast(origin,Vector3.up,lift.y,clearance,out _) || CurbCast(origin+lift,forward,advance.magnitude,clearance,out _))return;
+            }
+            // Translate all three jointed bodies equally, preserving velocity and joint spacing.
+            Vector3 offset=lift+advance;rb.position+=offset;fWheelRb.position+=offset;rWheelRb.position+=offset;
+            UpdateGroundContact();
+        }
+        private void ApplyReverse(Rigidbody body, Vector3 travel)
+        {
+            float speed = -Vector3.Dot(body.linearVelocity, travel);
+            float delta = Mathf.Min(Mathf.Max(0, reverseSpeed - speed), reverseAcceleration * Time.fixedDeltaTime);
+            body.AddForce(-travel * delta, ForceMode.VelocityChange);
+        }
         private void ApplyResistance(Rigidbody body, float decelerationRate)
         {
             Vector3 velocity = Vector3.ProjectOnPlane(body.linearVelocity, GroundNormal);
@@ -601,12 +668,13 @@ void ApplyCustomInput()
         public void ClearInput()
         {
             customAccelerationAxis = rawCustomAccelerationAxis = customSteerAxis = customLeanAxis = 0;
+            reverseHold = 0;HandbrakeHeld=false;
             wheelieInput = sprint = false;
             wheeliePower = bunnyHopAmount = queuedHop = 0;
             chargingHop = isBunnyHopping = false;
             bunnyHopInputState = mobileControls.prevBHopInput = 0;
             foreach (var button in new[] { mobileControls.forward, mobileControls.backward, mobileControls.left,
-                mobileControls.right, mobileControls.sprint, mobileControls.bHop, mobileControls.wheelie })
+                mobileControls.right, mobileControls.handbrake, mobileControls.sprint, mobileControls.bHop, mobileControls.wheelie })
                 if (button != null) button.ReleaseAll();
         }
 

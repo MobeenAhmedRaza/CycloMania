@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 namespace Cyclomania
 {
@@ -13,6 +14,9 @@ namespace Cyclomania
         private float saveAt,scanAt;
         private int nativeLong,nativeShort;
         private AudioClip generatedMusic;
+        private readonly List<SettingsAudioChannel> channels=new List<SettingsAudioChannel>();
+        private readonly List<AudioSource> staleSources=new List<AudioSource>();
+        private readonly Dictionary<AudioSource,SettingsAudioChannel> routed=new Dictionary<AudioSource,SettingsAudioChannel>();
         public void Initialize(string saveKey,AudioClip musicClip=null)
         {
             key=saveKey;Preferences=GamePreferences.FromJson(string.IsNullOrEmpty(key)?"":PlayerPrefs.GetString(key,""));
@@ -31,26 +35,35 @@ namespace Cyclomania
         }
         private void Scan()
         {
+            staleSources.Clear();foreach(var pair in routed)if(pair.Key==null || pair.Value==null)staleSources.Add(pair.Key);
+            foreach(var source in staleSources)routed.Remove(source);channels.RemoveAll(channel=>channel==null);
             foreach(var source in FindObjectsByType<AudioSource>(FindObjectsInactive.Include,FindObjectsSortMode.None))
                 {
+                    if(routed.TryGetValue(source,out var existing) && existing!=null && existing.Owner==this)continue;
                     SettingsAudioChannel match=null;
                     foreach(var channel in source.GetComponents<SettingsAudioChannel>())if(channel.Source==source){match=channel;break;}
-                    if(match==null)source.gameObject.AddComponent<SettingsAudioChannel>().Bind(this,false,source);
+                    if(match==null){match=source.gameObject.AddComponent<SettingsAudioChannel>();match.Bind(this,false,source);}
                     else if(match.Owner==null)match.Bind(this,match.music,source);
+                    routed[source]=match;if(!channels.Contains(match))channels.Add(match);
                 }
+        }
+        internal void Register(SettingsAudioChannel channel)
+        {
+            if(channel==null)return;if(!channels.Contains(channel))channels.Add(channel);
+            if(channel.Source!=null)routed[channel.Source]=channel;
         }
         public void SetEffects(float value){Preferences.effects=GamePreferences.Volume(value,1);Changed();}
         public void SetMusic(float value){Preferences.music=GamePreferences.Volume(value,.35f);Changed();}
         public void SetGraphics(int value){Preferences.graphics=Mathf.Clamp(value,0,3);ApplyGraphics();Changed();}
         private void Changed()
         {
-            foreach(var channel in FindObjectsByType<SettingsAudioChannel>(FindObjectsInactive.Include,FindObjectsSortMode.None))if(channel.Owner==this)channel.Apply();
+            foreach(var channel in channels)if(channel!=null && channel.Owner==this)channel.Apply();
             dirty=true;saveAt=Time.unscaledTime+.4f;
         }
         private void Update()
         {
             if(dirty && Time.unscaledTime>=saveAt)Flush();
-            if(Time.unscaledTime>=scanAt){scanAt=Time.unscaledTime+1;Scan();}
+            if(Time.unscaledTime>=scanAt){scanAt=Time.unscaledTime+5;Scan();}
             if(landscape!=(Screen.width>=Screen.height))ApplyResolution();
         }
         public void Flush()
@@ -84,6 +97,6 @@ namespace Cyclomania
         private void RefreshMusicPlayback(){if(Music==null)return;if(appPaused || !hasFocus)Music.Pause();else Music.UnPause();}
         private void OnApplicationQuit(){Flush();}
         private void OnDisable(){Flush();}
-        private void OnDestroy(){Flush();foreach(var channel in FindObjectsByType<SettingsAudioChannel>(FindObjectsInactive.Include,FindObjectsSortMode.None))if(channel.Owner==this){channel.enabled=false;Destroy(channel);}if(Music!=null)Destroy(Music.gameObject);if(generatedMusic!=null)Destroy(generatedMusic);}
+        private void OnDestroy(){Flush();foreach(var channel in channels)if(channel!=null && channel.Owner==this){channel.enabled=false;Destroy(channel);}if(Music!=null)Destroy(Music.gameObject);if(generatedMusic!=null)Destroy(generatedMusic);}
     }
 }

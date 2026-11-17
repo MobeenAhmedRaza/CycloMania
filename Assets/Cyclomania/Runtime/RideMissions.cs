@@ -16,6 +16,7 @@ namespace Cyclomania
         public string SaveNotice { get; private set; }="";
         public int Selected { get; private set; }
         public bool ResultsPending { get; private set; }
+        public MissionLocations Locations {get;private set;}
         private GameplayHud hud;
         private BicycleController bike;
         private CycleRecovery recovery;
@@ -27,6 +28,7 @@ namespace Cyclomania
         private bool[] originalKinematic;
         private MissionState lastState;
         private GameObject marker, packageVisual, speedZone, checkpointGate;
+        private LineRenderer routeLine;private Vector3[] shownRoute;private Material routeMaterial;
         private GameObject rivalVisual, raceFinish;
         private Material rivalMaterial, tireMaterial, policeLightMaterial;
         private GameObject policeBeacon;
@@ -79,9 +81,13 @@ namespace Cyclomania
         private bool BeginAttempt(int index,bool freestyle,MissionDefinition definition)
         {
             if(hud==null || hud.World==null || Attempt.Active)return false;
+            if(RideWorld.Layout==null)return false;
+            if(Locations==null){Locations=gameObject.AddComponent<MissionLocations>();Locations.Initialize();}
+            if(freestyle){definition=RideWorld.Layout.Place(definition);}
+            else if(!Locations.Place(definition,index,RideWorld.Layout)){SaveNotice="Mission locations are unavailable. Rebuild the map location data.";return false;}
             Bind();
             if(!hud.World.Travel(definition.Destination))return false;
-            if(!freestyle && index==MissionCatalog.CanyonJumpIndex) {recovery.SetCheckpoint(new Vector3(1000,0,245),0);recovery.Respawn();}
+            if(definition.hasSpawn){recovery.SetCheckpoint(definition.spawn,Locations.Heading);recovery.Respawn();}
             lastHeading=bike.transform.eulerAngles.y;
             IsFreestyle=freestyle;Selected=index;ResultsPending=false;SaveNotice="";
             if(!Attempt.Start(definition))return false;
@@ -118,7 +124,7 @@ namespace Cyclomania
             float nose=Mathf.Asin(Mathf.Clamp(Vector3.Dot(bike.rb.rotation*Vector3.forward,bike.GroundNormal),-1,1))*Mathf.Rad2Deg;
             float speed=Vector3.ProjectOnPlane(bike.rb.linearVelocity,Vector3.up).magnitude;
             float heading=bike.rb.rotation.eulerAngles.y;float yawDelta=Mathf.DeltaAngle(lastHeading,heading);lastHeading=heading;
-            Attempt.Tick(new MissionSample {Acceleration=bike.rawCustomAccelerationAxis,Steering=bike.customSteerAxis,YawDelta=yawDelta,Position=bike.rb.position,SpeedKmh=speed*3.6f,Grounded=bike.IsGrounded,StableGrounded=bike.FrontGrounded && bike.RearGrounded && Vector3.Dot(bike.rb.rotation*Vector3.up,bike.GroundNormal)>=.8f,Wheelie=bike.RearGrounded && !bike.FrontGrounded && nose>=12 && speed>=1},Time.fixedDeltaTime,hud.IsPaused);
+            Attempt.Tick(new MissionSample {Acceleration=bike.HandbrakeHeld?-1:bike.rawCustomAccelerationAxis,Steering=bike.customSteerAxis,YawDelta=yawDelta,Position=bike.rb.position,SpeedKmh=speed*3.6f,Grounded=bike.IsGrounded,StableGrounded=bike.FrontGrounded && bike.RearGrounded && Vector3.Dot(bike.rb.rotation*Vector3.up,bike.GroundNormal)>=.8f,Wheelie=bike.RearGrounded && !bike.FrontGrounded && nose>=12 && speed>=1},Time.fixedDeltaTime,hud.IsPaused);
             ReleaseCountdown();
         }
         private void Update()
@@ -143,7 +149,7 @@ namespace Cyclomania
             if(Attempt.State==MissionState.Idle)return;
             var d=Attempt.Definition;var o=Attempt.Objective;
             string detail=Attempt.Result;float progress=Attempt.State==MissionState.Completed?1:0;
-            if(Attempt.State==MissionState.Countdown)detail=$"GET READY  {Mathf.CeilToInt(Attempt.Countdown)}";
+            if(Attempt.State==MissionState.Countdown)detail=$"GET READY  {Mathf.CeilToInt(Attempt.Countdown)}"+(!IsFreestyle && Locations!=null?" · "+Locations.LocationName:"");
             if(Attempt.State==MissionState.Running && o!=null) {
                 string amount=o.kind==ObjectiveKind.ReachPoint?$"{Vector3.Distance(bike.transform.position,o.point):0} m away":$"{Attempt.Progress:0.#} / {o.target:0.#}";
                 if(d.Id=="checkpoint_run" || d.Id=="mountain_ascent") {
@@ -203,6 +209,7 @@ namespace Cyclomania
             }
             UpdateCheckpointGate(o);
             UpdateRace(o);
+            UpdateRouteLine(o);
             UpdateSpeedZone(o);
             UpdatePackageVisual();
             if(marker==null)return;marker.SetActive(visible);
@@ -211,9 +218,16 @@ namespace Cyclomania
                 float radius=landing?o.landingRadius:o.radius;
                 marker.transform.position=(landing?o.landingPoint:o.point)+Vector3.up*.06f;marker.transform.localScale=new Vector3(radius*2,.035f,radius*2);}
         }
+        private void UpdateRouteLine(MissionObjective objective)
+        {
+            var route=Attempt.Active?objective?.route:null;
+            if(routeLine==null && route!=null){var go=new GameObject("Mission route guide");routeLine=go.AddComponent<LineRenderer>();routeLine.useWorldSpace=true;routeLine.widthMultiplier=.25f;routeMaterial=new Material(Shader.Find("Sprites/Default"));routeLine.sharedMaterial=routeMaterial;routeLine.startColor=routeLine.endColor=new Color(.05f,.9f,.8f);}
+            if(routeLine==null)return;routeLine.gameObject.SetActive(route!=null);
+            if(route!=null && route!=shownRoute){shownRoute=route;routeLine.positionCount=route.Length;var points=new Vector3[route.Length];for(int i=0;i<points.Length;i++)points[i]=route[i]+Vector3.up*.08f;routeLine.SetPositions(points);}
+        }
         private Quaternion MountainGateRotation()
         {
-            Vector3 previous=Attempt.ObjectiveIndex==0?RideWorld.Destinations[2].Position:Attempt.Definition.Objectives[Attempt.ObjectiveIndex-1].point;
+            Vector3 previous=Attempt.ObjectiveIndex==0?(Attempt.Definition.hasSpawn?Attempt.Definition.spawn:RideWorld.Destinations[2].Position):Attempt.Definition.Objectives[Attempt.ObjectiveIndex-1].point;
             return Quaternion.LookRotation(Attempt.Objective.point-previous,Vector3.up);
         }
         private void UpdateCheckpointGate(MissionObjective objective)
@@ -230,7 +244,7 @@ namespace Cyclomania
             if(checkpointGate==null)return;checkpointGate.SetActive(visible);
             if(!visible)return;
             checkpointGate.name=Attempt.Definition.Id=="mountain_ascent"?"Mountain ascent gate":"Checkpoint run gate";
-            checkpointGate.transform.rotation=Attempt.Definition.Id=="mountain_ascent"?MountainGateRotation():Quaternion.identity;
+            checkpointGate.transform.rotation=Attempt.Definition.Id=="mountain_ascent"?MountainGateRotation():objective.route!=null?MissionRoute.Heading(objective.route,MissionRoute.Nearest(objective.route,objective.point,out _)):Quaternion.identity;
             checkpointGate.transform.position=objective.point;
             for(int i=0;i<3;i++) {
                 var part=checkpointGate.transform.GetChild(i);
@@ -282,12 +296,14 @@ namespace Cyclomania
             rivalMaterial.color=police?new Color(.08f,.25f,.8f):boss?new Color(1,.7f,.05f):new Color(.95f,.25f,.1f);
             policeLightMaterial.color=((int)(Attempt.Elapsed*4)%2==0)?Color.blue:Color.red;
             float distance=police?Attempt.PoliceDistance:Attempt.RivalDistance;
-            rivalVisual.transform.position=police?Attempt.PolicePosition:objective.point+new Vector3(4,0,Attempt.RivalDistance);
-            rivalVisual.transform.rotation=police?Quaternion.LookRotation(Attempt.PoliceFacing):Quaternion.identity;
-            raceFinish.transform.position=objective.point+new Vector3(0,.05f,objective.target);
+            rivalVisual.transform.position=police?Attempt.PolicePosition:objective.route!=null?MissionRoute.Point(objective.route,Attempt.RivalDistance):objective.point+new Vector3(4,0,Attempt.RivalDistance);
+            rivalVisual.transform.rotation=police?Quaternion.LookRotation(Attempt.PoliceFacing):objective.route!=null?MissionRoute.Heading(objective.route,Attempt.RivalDistance):Quaternion.identity;
+            raceFinish.transform.position=(objective.route!=null?MissionRoute.Point(objective.route,objective.target):objective.point+Vector3.forward*objective.target)+Vector3.up*.05f;
+            raceFinish.transform.rotation=objective.route!=null?MissionRoute.Heading(objective.route,objective.target):Quaternion.identity;
+            raceFinish.transform.Find("Start line").gameObject.SetActive(objective.route==null);
             raceFinish.transform.Find("Start line").localPosition=new Vector3(0,0,-objective.target);
             foreach(string sideName in new[]{"Left boundary","Right boundary"}) {
-                var edge=raceFinish.transform.Find(sideName);edge.localPosition=new Vector3(sideName=="Left boundary"?-10:10,0,-objective.target*.5f);edge.localScale=new Vector3(.12f,.04f,objective.target);
+                var edge=raceFinish.transform.Find(sideName);edge.gameObject.SetActive(objective.route==null);edge.localPosition=new Vector3(sideName=="Left boundary"?-10:10,0,-objective.target*.5f);edge.localScale=new Vector3(.12f,.04f,objective.target);
             }
             for(int i=0;i<2;i++) {
                 float side=i==0?-.16f:.16f,phase=distance*3+i*Mathf.PI;
@@ -329,6 +345,7 @@ namespace Cyclomania
                     edge.GetComponent<Renderer>().sharedMaterial=markerMaterial;
                 }
             }
+            if(objective?.route!=null)visible=false;
             if(speedZone==null)return;speedZone.SetActive(visible);
             if(!visible)return;
             speedZone.name=police?"Pursuit area":"Speed trial zone";
@@ -360,6 +377,7 @@ namespace Cyclomania
             if(rivalVisual!=null)Destroy(rivalVisual);if(raceFinish!=null)Destroy(raceFinish);if(rivalMaterial!=null)Destroy(rivalMaterial);if(tireMaterial!=null)Destroy(tireMaterial);if(policeLightMaterial!=null)Destroy(policeLightMaterial);
             if(checkpointGate!=null)Destroy(checkpointGate);
             if(speedZone!=null)Destroy(speedZone);
+            if(routeLine!=null)Destroy(routeLine.gameObject);if(routeMaterial!=null)Destroy(routeMaterial);
             if(marker!=null)Destroy(marker);if(markerMaterial!=null)Destroy(markerMaterial);
             if(packageVisual!=null)Destroy(packageVisual);if(packageMaterial!=null)Destroy(packageMaterial);
         }

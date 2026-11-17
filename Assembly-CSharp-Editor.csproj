@@ -52,6 +52,8 @@
     <Compile Include="Assets/Cyclomania/Editor/IOSBuild.cs" />
     <Compile Include="Assets/Simple Bicycle Physics/Editor/SaveBicycleReplay.cs" />
     <Compile Include="Assets/Simple Bicycle Physics/Editor/CyclistSetup.cs" />
+    <Compile Include="Assets/Cyclomania/Editor/RideLevelAuthoring.cs" />
+    <Compile Include="Assets/Cyclomania/Editor/MissionLocationBaker.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

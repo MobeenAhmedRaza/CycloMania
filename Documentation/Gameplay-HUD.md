@@ -6,7 +6,7 @@
 
 - Speed in km/h, refreshed ten times per second.
 - Session distance in km, measured from horizontal bicycle velocity during physics steps. Paused/crashed riding does not accumulate distance. Respawn teleportation is never counted, and the touch reset retains the trip distance.
-- Circular north-up minimap with a cyan heading marker. A 256 × 256 overhead camera renders the local world at 10 Hz, excluding UI, with a 130 m view across. It stops refreshing while paused and releases its render texture/camera on destruction.
+- Circular north-up minimap with a cyan heading marker. A 256 × 256 overhead camera renders the local world at up to 5 Hz while moving, or once every two seconds while stationary, excluding UI, with a 130 m view across. It stops refreshing while paused and releases its render texture/camera on destruction.
 - Objective title/detail and optional progress bar. Defaults to FREE RIDE; crash recovery temporarily displays RECOVERING.
 - Coin/gem counters default to zero; no fabricated rewards or purchases are added.
 - Top-right PAUSE button. Escape also toggles pause, or returns from a submenu to the pause page.

@@ -10,8 +10,8 @@ namespace Cyclomania
         public SchoolLesson School {get;}=new SchoolLesson();
         public RideEnvironment Environment {get;private set;}
         public RideReplay Replay {get;private set;}
-        private string advancedNotice="";private GameObject schoolCourse;private float schoolElapsed;
-        private static readonly Vector3 SchoolOrigin=new Vector3(1500,5,0);
+        private string advancedNotice="";private float schoolElapsed;
+        private static Vector3 SchoolOrigin=>RideWorld.Layout!=null && RideWorld.Layout.school!=null?RideWorld.Layout.school.position:Vector3.zero;
         private Vector3 schoolReturn;private float schoolReturnHeading;
         private CycleRecovery advancedRecovery;
         private void SchoolInterrupted(){if(School.Active)School.End("School interrupted by crash/reset. Retry from Advanced.");}
@@ -97,25 +97,16 @@ namespace Cyclomania
         private void BeginSchool(int lesson)
         {
             if(changingBicycle || recovery==null || !recovery.IsReady || lesson>Advanced.schoolCompleted)return;
+            if(RideWorld.Layout==null || RideWorld.Layout.school==null)return;
             Missions?.Interrupt("Cycling school started.");Missions?.Dismiss();
             if(!schoolVisit){schoolReturn=recovery.CheckpointPosition;schoolReturnHeading=recovery.CheckpointHeading;}
-            if(schoolCourse==null)BuildSchool();schoolVisit=true;
+            schoolVisit=true;
             recovery.SetCheckpoint(SchoolOrigin+new Vector3(2.5f,1,0),0);recovery.Respawn();School.Begin(lesson);schoolElapsed=0;Resume();
         }
         private void LeaveSchool()
         {
             School.End("");schoolVisit=false;recovery.SetCheckpoint(schoolReturn,schoolReturnHeading);recovery.Respawn();ShowAdvanced();
         }
-        private void BuildSchool()
-        {
-            schoolCourse=new GameObject("Cycling school course");schoolCourse.transform.SetParent(transform,false);schoolCourse.transform.position=SchoolOrigin;
-            void Box(string name,Vector3 pos,Vector3 scale,Color color,bool solid){var g=GameObject.CreatePrimitive(PrimitiveType.Cube);g.name=name;g.transform.SetParent(schoolCourse.transform,false);g.transform.localPosition=pos;g.transform.localScale=scale;if(!solid)Destroy(g.GetComponent<Collider>());var block=new MaterialPropertyBlock();block.SetColor("_Color",color);block.SetColor("_BaseColor",color);g.GetComponent<Renderer>().SetPropertyBlock(block);}
-            Box("Road",new Vector3(0,-.5f,50),new Vector3(12,1,115),Color.gray,true);
-            Box("Centre line",new Vector3(0,.015f,50),new Vector3(.12f,.02f,110),Color.yellow,false);
-            Box("Stop box",new Vector3(2.5f,.02f,38),new Vector3(5,.02f,4),Color.red,false);
-            Box("Finish",new Vector3(2.5f,.02f,95),new Vector3(5,.02f,1),Color.green,false);
-            for(int z=0;z<=100;z+=20){var sign=new GameObject("20 KM/H sign");sign.transform.SetParent(schoolCourse.transform,false);sign.transform.localPosition=new Vector3(5,2,z);sign.transform.localRotation=Quaternion.Euler(0,180,0);var text=sign.AddComponent<TextMesh>();text.text=z==40?"STOP / SIGNAL":"20 KM/H\nKEEP RIGHT";text.characterSize=.22f;text.fontSize=40;text.anchor=TextAnchor.MiddleCenter;}
-        }
-        private void CloseAdvanced(){if(advancedRecovery!=null){advancedRecovery.Crashed-=SchoolInterrupted;advancedRecovery.Respawned-=SchoolInterrupted;}if(Environment!=null)Destroy(Environment);if(Replay!=null)Destroy(Replay);if(schoolCourse!=null)Destroy(schoolCourse);}
+        private void CloseAdvanced(){if(advancedRecovery!=null){advancedRecovery.Crashed-=SchoolInterrupted;advancedRecovery.Respawned-=SchoolInterrupted;}if(Environment!=null)Destroy(Environment);if(Replay!=null)Destroy(Replay);}
     }
 }

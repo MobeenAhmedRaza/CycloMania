@@ -16,13 +16,16 @@ namespace Cyclomania
         public Vector3 point, zoneSize, landingPoint;
         public float landingRadius=3;
         public bool useZone;
-        public bool Contains(Vector3 position) => !useZone || (Mathf.Abs(position.x-point.x)<=zoneSize.x*.5f && Mathf.Abs(position.y-point.y)<=zoneSize.y*.5f && Mathf.Abs(position.z-point.z)<=zoneSize.z*.5f);
+        public Vector3[] route;
+        public bool Contains(Vector3 position) => !useZone || (route!=null && route.Length>1 ? OnRoute(position) : (Mathf.Abs(position.x-point.x)<=zoneSize.x*.5f && Mathf.Abs(position.y-point.y)<=zoneSize.y*.5f && Mathf.Abs(position.z-point.z)<=zoneSize.z*.5f));
+        private bool OnRoute(Vector3 position){MissionRoute.Nearest(route,position,out float separation);return separation<=8;}
     }
     public sealed class MissionDefinition
     {
         public string Id, Title;
         public int Level=1, Destination, Reward;
         public float TimeLimit;
+        public bool hasSpawn;public Vector3 spawn;
         public MissionObjective[] Objectives;
     }
     public struct MissionSample
@@ -57,6 +60,7 @@ namespace Cyclomania
         public float PoliceDistance { get; private set; }
         private Vector3 previousPolicePlayer;
         private float policeSpeed;
+        private float policeRouteDistance;
         public string Result { get; private set; }="";
         public bool Active => State==MissionState.Countdown || State==MissionState.Running;
         public MissionObjective Objective => Definition!=null && ObjectiveIndex<Definition.Objectives.Length ? Definition.Objectives[ObjectiveIndex] : null;
@@ -73,6 +77,8 @@ namespace Cyclomania
             foreach(var item in definition.Objectives)if(item.kind==ObjectiveKind.PoliceEscape && item.radius<=3)return false;
             foreach(var item in definition.Objectives)if(item.kind==ObjectiveKind.CanyonJump && (definition.Objectives.Length!=1 || !Valid(item.landingPoint.sqrMagnitude) || !Valid(item.landingRadius) || item.landingRadius<=0))return false;
             foreach(var item in definition.Objectives)if(item.kind==ObjectiveKind.RivalRace && (!Valid(item.rivalAcceleration) || item.rivalAcceleration<=0))return false;
+            if(definition.hasSpawn && !Valid(definition.spawn.sqrMagnitude))return false;
+            foreach(var item in definition.Objectives)if(item.route!=null){if(item.route.Length<2)return false;foreach(var point in item.route)if(!Valid(point.sqrMagnitude))return false;}
             bool package=false;
             foreach(var item in definition.Objectives) {
                 if(item.kind==ObjectiveKind.PickupPackage) {if(package)return false;package=true;}
@@ -81,9 +87,11 @@ namespace Cyclomania
             if(package)return false;
             // Freeze the attempt so catalog or editor changes cannot mutate a running objective.
             var copy=new MissionObjective[definition.Objectives.Length];
-            for(int i=0;i<copy.Length;i++) {var o=definition.Objectives[i];copy[i]=new MissionObjective {kind=o.kind,instruction=o.instruction,target=o.target,speedKmh=o.speedKmh,radius=o.radius,point=o.point,direction=o.direction,useZone=o.useZone,zoneSize=o.zoneSize,landingPoint=o.landingPoint,landingRadius=o.landingRadius,rivalAcceleration=o.rivalAcceleration};}
-            Definition=new MissionDefinition {Id=definition.Id,Title=definition.Title,Level=definition.Level,Destination=definition.Destination,Reward=Math.Max(0,definition.Reward),TimeLimit=definition.TimeLimit,Objectives=copy};
+            for(int i=0;i<copy.Length;i++) {var o=definition.Objectives[i];copy[i]=new MissionObjective {kind=o.kind,route=o.route==null?null:(Vector3[])o.route.Clone(),instruction=o.instruction,target=o.target,speedKmh=o.speedKmh,radius=o.radius,point=o.point,direction=o.direction,useZone=o.useZone,zoneSize=o.zoneSize,landingPoint=o.landingPoint,landingRadius=o.landingRadius,rivalAcceleration=o.rivalAcceleration};}
+            Definition=new MissionDefinition {Id=definition.Id,Title=definition.Title,Level=definition.Level,Destination=definition.Destination,Reward=Math.Max(0,definition.Reward),TimeLimit=definition.TimeLimit,hasSpawn=definition.hasSpawn,spawn=definition.spawn,Objectives=copy};
             previousPolicePlayer=copy[0].point;PolicePosition=previousPolicePlayer-Vector3.forward*18;
+            policeRouteDistance=-18;
+            if(copy[0].route!=null)PolicePosition=MissionRoute.Point(copy[0].route,-18);
             PoliceFacing=Vector3.forward;PoliceGap=18;CaptureProgress=PoliceDistance=policeSpeed=0;
             JumpReady=JumpInFlight=jumpTouchedDown=false;JumpAirtime=landingWait=0;WheelieHoldBroken=false;RivalDistance=previousRaceDistance=0;ObjectiveIndex=0;CarryingPackage=false;BrakeArmed=false;Progress=Elapsed=0;Countdown=3;Result="";State=MissionState.Countdown;return true;
         }
@@ -138,8 +146,9 @@ namespace Cyclomania
         private void TickRace(MissionSample sample,float step)
         {
             var o=Objective;
-            float distance=sample.Position.z-o.point.z;
-            if(Mathf.Abs(sample.Position.x-o.point.x)>o.radius || Mathf.Abs(sample.Position.y-o.point.y)>5 || distance< -10) {
+            float distance=sample.Position.z-o.point.z;float separation=0;
+            if(o.route!=null)distance=MissionRoute.Nearest(o.route,sample.Position,out separation);
+            if(o.route!=null?separation>o.radius:(Mathf.Abs(sample.Position.x-o.point.x)>o.radius || Mathf.Abs(sample.Position.y-o.point.y)>5 || distance< -10)) {
                 Fail("You left the race course. Retry the sprint.");return;
             }
             float startTime=Elapsed-step,speed=o.speedKmh/3.6f;
@@ -161,9 +170,9 @@ namespace Cyclomania
         private void TickCanyon(MissionSample sample,float step)
         {
             var o=Objective;
-            if(sample.Position.y<1 || Mathf.Abs(sample.Position.x-o.point.x)>10 || sample.Position.z>326) {
+            if(sample.Position.y<o.point.y-2 || Mathf.Abs(sample.Position.x-o.point.x)>10 || sample.Position.z>o.point.z+47) {
                 // The ground-level run-up is allowed until the jump is armed.
-                if(JumpReady || JumpInFlight || sample.Position.z>=270) {Fail("Missed the landing. Retry the canyon jump.");return;}
+                if(JumpReady || JumpInFlight || sample.Position.z>=o.point.z-9) {Fail("Missed the landing. Retry the canyon jump.");return;}
             }
             if(!JumpInFlight) {
                 if(sample.Grounded)JumpReady=Vector3.Distance(sample.Position,o.point)<=o.radius;
@@ -187,7 +196,8 @@ namespace Cyclomania
         {
             var o=Objective;
             Vector3 offset=sample.Position-o.point;
-            if(Mathf.Abs(offset.x)>10 || Mathf.Abs(offset.y)>5 || offset.z< -20 || offset.z>640) {
+            float along=0,separation=0;if(o.route!=null)along=MissionRoute.Nearest(o.route,sample.Position,out separation);
+            if(o.route!=null?(separation>10 || along>640):(Mathf.Abs(offset.x)>10 || Mathf.Abs(offset.y)>5 || offset.z< -20 || offset.z>640)) {
                 Fail("You left the pursuit area. Stay on the highway.");return;
             }
             float start=Elapsed-step,consumed=0;
@@ -199,6 +209,7 @@ namespace Cyclomania
                 Vector3 delta=player-PolicePosition;
                 if(delta.sqrMagnitude>.0001f)PoliceFacing=delta.normalized;
                 Vector3 next=Vector3.MoveTowards(PolicePosition,player,policeSpeed*dt);
+                if(o.route!=null){float playerDistance=MissionRoute.Nearest(o.route,player,out _);policeRouteDistance=Mathf.MoveTowards(policeRouteDistance,playerDistance,policeSpeed*dt);next=MissionRoute.Point(o.route,policeRouteDistance);PoliceFacing=MissionRoute.Heading(o.route,policeRouteDistance)*Vector3.forward;}
                 PoliceDistance+=Vector3.Distance(next,PolicePosition);PolicePosition=next;
                 PoliceGap=Vector3.Distance(player,PolicePosition);
                 CaptureProgress=PoliceGap<=3?CaptureProgress+dt:0;

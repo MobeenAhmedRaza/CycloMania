@@ -66,6 +66,12 @@ public static class CoreValidation
         var cameraObject=new GameObject("Camera");cameraObject.AddComponent<Camera>();var camera=cameraObject.AddComponent<BicycleCamera>();camera.enabled=false;camera.target=root.transform;Invoke(camera,"Start");
         var wall=GameObject.CreatePrimitive(PrimitiveType.Cube);wall.transform.position=root.transform.position+new Vector3(0,2,-2);wall.transform.localScale=new Vector3(5,5,.2f);Physics.SyncTransforms();camera.Snap();
         Check(camera.transform.position.z>-1.9f,"camera pulls in ahead of obstruction");
+        Check(!camera.GetComponent<Camera>().useOcclusionCulling,"ride camera does not use stale map occlusion data");
+        wall.transform.position=root.transform.position+new Vector3(0,1.7f,-.5f);wall.transform.localScale=new Vector3(4,4,.2f);Physics.SyncTransforms();camera.Snap();
+        Check(Vector3.Distance(camera.transform.position,root.transform.position+Vector3.up*camera.lookAtHeight)>2,"close obstruction selects a usable side view instead of centimetre zoom");
+        Check(Vector3.Distance(camera.transform.position,wall.GetComponent<Collider>().ClosestPoint(camera.transform.position))>=camera.collisionRadius-.05f,"alternate camera view remains outside the obstructing wall");
+        UnityEngine.Object.DestroyImmediate(wall);
+        MinimapPerformanceValidation.Run(root.transform);
         TouchValidation.Run(bike);
         HudValidation.Run(bike);
         StuntValidation.Run(bike);
@@ -75,5 +81,6 @@ public static class CoreValidation
         EconomyValidation.Run();
         AdvancedValidation.Run();
         RecurringValidation.Run();
+        MissionLocationValidation.Run();
     }
 }

@@ -70,6 +70,7 @@
     <Compile Include="Assets/Cyclomania/Runtime/RideMinimap.cs" />
     <Compile Include="Assets/Simple Bicycle Physics/Scripts/MobileButtonHandler.cs" />
     <Compile Include="Assets/Simple Bicycle Physics/Scripts/CyclistAnimController.cs" />
+    <Compile Include="Assets/Cyclomania/Runtime/MissionLocations.cs" />
     <Compile Include="Assets/Cyclomania/Runtime/GameSettings.cs" />
     <Compile Include="Assets/ithappy/Megacity/Traffic/Scripts/FreeCamera.cs" />
     <Compile Include="Assets/Cyclomania/Runtime/GameplayHud.cs" />
@@ -109,6 +110,7 @@
     <Compile Include="Assets/Cyclomania/Runtime/IOSFoundation.cs" />
     <Compile Include="Assets/ithappy/Megacity/Traffic/Scripts/SplineSpeed.cs" />
     <Compile Include="Assets/Cyclomania/Runtime/MissionSession.cs" />
+    <Compile Include="Assets/Cyclomania/Runtime/RideLevelLayout.cs" />
     <Compile Include="Assets/Cyclomania/Runtime/RideWorld.cs" />
   </ItemGroup>
   <ItemGroup>

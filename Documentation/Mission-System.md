@@ -62,3 +62,7 @@ Tests disable player-save access. Headless checks do not replace visual review, 
 ## Part 10 integration
 
 `RideMissions` also runs Freestyle challenges with separate point/save records and zone unlocks. Career catalogue indices and points remain unchanged. See `Freestyle-Mode.md` for the 15 challenges, scope adaptations and deferred systems.
+
+## Current-map route placement
+
+Career mission starts and routes now vary deterministically by mission and level. Mountain/Canyon variants remain on their authored terrain, as requested. See `Mission-Locations.md` for placement, route-following AI, validation and rebaking instructions.

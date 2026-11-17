@@ -7,7 +7,7 @@ namespace Cyclomania
     [RequireComponent(typeof(CanvasRenderer))]
     public sealed class TouchControlGraphic : MaskableGraphic
     {
-        public enum Symbol { Left, Right, Pedal, Brake, Sprint, Jump, Wheelie, Reset }
+        public enum Symbol { Left, Right, Pedal, Brake, Sprint, Jump, Wheelie, Reset, Handbrake }
         public Symbol symbol;
         private MobileButtonHandler input;
         private Vector2 center;
@@ -47,6 +47,10 @@ namespace Cyclomania
                     Line(vh,new Vector2(.1f,-.05f),new Vector2(-.3f,-.2f),.06f,ink);
                     Line(vh,new Vector2(.1f,-.05f),new Vector2(.21f,.52f),.06f,ink);
                     Line(vh,new Vector2(.21f,.52f),new Vector2(.35f,.23f),.06f,ink); break;
+                case Symbol.Handbrake:
+                    Ring(vh,Vector2.zero,.42f,.06f,ink);
+                    Line(vh,new Vector2(0,.25f),new Vector2(0,-.05f),.09f,ink);
+                    Line(vh,new Vector2(0,-.18f),new Vector2(0,-.23f),.09f,ink);break;
                 case Symbol.Reset:
                     for (int i=0;i<24;i++)
                     {

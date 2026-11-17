@@ -10,7 +10,9 @@ namespace Cyclomania
         private Camera mapCamera;
         private RenderTexture texture;
         private RectTransform marker;
-        private float nextRender;
+        private float nextRender,lastRender;
+        private Vector3 lastPosition;
+        private bool rendered;
 
         public void Initialize(Transform target, RawImage image, RectTransform riderMarker)
         {
@@ -35,13 +37,15 @@ namespace Cyclomania
             mapCamera.useOcclusionCulling=false;
             mapCamera.targetTexture=texture;
         }
-        public void SetTarget(Transform target) { rider=target; nextRender=0; }
+        public void SetTarget(Transform target) { rider=target; nextRender=0;rendered=false; }
         private void LateUpdate()
         {
             if (rider==null || mapCamera==null || Time.timeScale==0) return;
             marker.localRotation=Quaternion.Euler(0,0,-rider.eulerAngles.y);
             if(Time.unscaledTime<nextRender) return;
-            nextRender=Time.unscaledTime+.1f; // 10 Hz to limit the extra camera cost on mobile.
+            nextRender=Time.unscaledTime+.2f; // Cap the additional city render at 5 Hz.
+            if(rendered && (rider.position-lastPosition).sqrMagnitude<1 && Time.unscaledTime-lastRender<2)return;
+            rendered=true;lastPosition=rider.position;lastRender=Time.unscaledTime;
             mapCamera.transform.SetPositionAndRotation(rider.position+Vector3.up*150,Quaternion.Euler(90,0,0));
             if(SystemInfo.graphicsDeviceType!=GraphicsDeviceType.Null) mapCamera.Render();
         }
